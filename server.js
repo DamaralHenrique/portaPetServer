@@ -34,10 +34,8 @@ app.post("/savePet", async (request, response) => {
   let pet = body.pet;
 
   if(pet['id'] == null){
-    console.log("createPet");
     await createPet(userId, pet);
   }else{
-    console.log("editPet");
     await editPet(userId, pet);
   }
 
@@ -59,8 +57,6 @@ app.post("/deletePet", async (request, response) => {
 app.get("/listPets/:userId", async (request, response) => {
   // const userId = request.user.id;
   let userId = request.params.userId;
-
-  console.log(userId)
 
   let pets = await getPets(userId);
   response.send(pets);
