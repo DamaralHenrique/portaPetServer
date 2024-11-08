@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const sqlite3 = require('sqlite3').verbose();
+const MqttStart = require("./mqtt.js");
 
 let db = new sqlite3.Database('./database/PortaPet.db', sqlite3.OPEN_READWRITE, (err) => {
   if (err) {
@@ -9,6 +10,8 @@ let db = new sqlite3.Database('./database/PortaPet.db', sqlite3.OPEN_READWRITE, 
   }
   console.log('Connected to the PortaPet.db SQlite database.');
 });
+
+MqttStart()
 
 const app = express();
 const port = process.env.PORT || 3000;
