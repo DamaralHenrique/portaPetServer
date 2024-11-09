@@ -1,21 +1,38 @@
 const mqtt = require("mqtt");
 const client = mqtt.connect("mqtt://broker.hivemq.com");
+// const client = mqtt.connect("mqtt://test.mosquitto.org");
+const { getAllDoors, getDoorInfo } = require("./database.js");
 
-const MqttStart = () => {
-  client.on("connect", () => {
+function start() {
+  console.log("MQTT start");
+  client.on("connect", async () => {
     console.log("Conectado nos topicos...");
-    subscribeToTopic("portapet/1/info");
+    let doors = await getAllDoors();
+    doors.forEach((door) => {
+      subscribeToTopic('portapet/'+door.identification+'/update');
+    })
+    console.log("Topicos conectados");
   });
 
-  client.on("message", (topic, message) => {
-    // message is Buffer
-    console.log(message.toString());
-    // client.end();
+  client.on("message", async (topic, message) => {
+    var topicArray = topic.split("/");
+    if(topicArray[2] == "update"){
+      let door_identification = topicArray[1];
+      let door = await getDoorInfo(door_identification);
+      if(door){
+        client.publish('portapet/'+door_identification+'/info', JSON.stringify(door));
+      }
+    }
+  });
+
+  client.on('error', (error) => {
+    console.error('Erro de conexão:', error);
   });
 }
 
+
 const subscribeToTopic = (topic) => {
-  client.subscribe("topic", (err) => {
+  client.subscribe(topic, (err) => {
     if (!err) {
       console.log("Conectado em " + topic);
     }else{
@@ -24,5 +41,9 @@ const subscribeToTopic = (topic) => {
   });
 }
 
-module.exports = MqttStart;
+// const updateDoorInfo = (doorId) => {
+  
+// }
+
+module.exports = { start, subscribeToTopic };
 

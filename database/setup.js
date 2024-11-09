@@ -53,9 +53,10 @@ async function createTables(db) {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             pet_id int not null,
             door_id int not null,
-            side int not null,
-            start_at datetime not null,
-            end_at datetime not null,
+            s1_start_at datetime,
+            s1_end_at datetime,
+            s2_start_at datetime,
+            s2_end_at datetime,
             created_at datetime not null,
             updated_at datetime not null
         ); 
