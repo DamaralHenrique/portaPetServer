@@ -41,9 +41,12 @@ const subscribeToTopic = (topic) => {
   });
 }
 
-// const updateDoorInfo = (doorId) => {
-  
-// }
+const updateDoorInfo = async (door_identification) => {
+  let door = await getDoorInfo(door_identification);
+  if(door){
+    client.publish('portapet/'+door_identification+'/info', JSON.stringify(door));
+  }
+}
 
-module.exports = { start, subscribeToTopic };
+module.exports = { start, subscribeToTopic, updateDoorInfo };
 

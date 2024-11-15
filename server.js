@@ -1,8 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const { start: mqttStart, subscribeToTopic } = require("./mqtt.js");
-const { start, createPet, editPet, getPets, deletePet } = require("./database.js");
+const { start: mqttStart, updateDoorInfo } = require("./mqtt.js");
+const { start, createPet, editPet, getPets, deletePet, getDoors, getDoorInfo, saveDoorPet } = require("./database.js");
 
 start();
 mqttStart();
@@ -56,6 +56,33 @@ app.get("/listPets/:userId", async (request, response) => {
 
   let pets = await getPets(userId);
   response.send(pets);
+});
+
+app.get("/listDoors/:userId", async (request, response) => {
+  let userId = request.params.userId;
+
+  let pets = await getDoors(userId);
+  response.send(pets);
+});
+
+app.get("/listDoorPets/:doorId", async (request, response) => {
+  let doorId = request.params.doorId;
+
+  let pets = await getDoorInfo(doorId, true);
+  response.send(pets);
+});
+
+app.post("/saveDoorPet", async (request, response) => {
+  const body = request.body;
+
+  let userId = body.userId;
+  let pet = body.pet;
+  let doorId = body.doorId;
+  let doorIdentification = body.doorIdentification;
+
+  await saveDoorPet(userId, pet, doorId);
+  updateDoorInfo(doorIdentification);
+  response.send({ message: "Ok" });
 });
 
 app.listen(port);

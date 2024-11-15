@@ -83,9 +83,29 @@ function getAllDoors(){
   });
 }
 
-function getDoorInfo(doorIdentification){
+function getDoors(userId){
   return new Promise((resolve, reject) => {
-    db.all(`SELECT P.bluetooth_address, 
+    db.all(`SELECT * FROM door
+        WHERE user_id = ?`, 
+    [userId], 
+    (err, rows) => {
+        if(err) {
+            reject(err);
+        }
+        resolve(rows);
+    })
+  });
+}
+
+function getDoorInfo(doorIdentification, fillInfo=false){
+  let extraFields = ""
+  if(fillInfo){
+    extraFields = "P.name, P.id,"
+  }
+    
+  
+  return new Promise((resolve, reject) => {
+    db.all(`SELECT P.bluetooth_address, ${extraFields}
         IFNULL(strftime('%H:%M', s1_start_at) || '/' || strftime('%H:%M', s1_end_at), '') AS e,
         IFNULL(strftime('%H:%M', s2_start_at) || '/' || strftime('%H:%M', s2_end_at), '') AS s 
       FROM door_access AS DA
@@ -102,4 +122,23 @@ function getDoorInfo(doorIdentification){
   });
 }
 
-module.exports = { start, createPet, editPet, getPets, deletePet, getAllDoors, getDoorInfo }
+function saveDoorPet(userId, pet, doorId){
+  db.run(`
+    UPDATE door_access
+      SET s1_start_at = ?,
+        s1_end_at = ?,
+        s2_start_at = ?,
+        s2_end_at = ?,
+        updated_at = DATE('now')
+      WHERE pet_id = ? AND door_id = ?
+    `, [pet['sideOneStarsAt'], pet['sideOneEndsAt'], pet['sideTwoStarsAt'], pet['sideTwoEndsAt'], pet['id'], doorId]
+  , function(err) {
+    if (err) {
+      return console.log(err.message);
+    }
+    // get the last insert id
+    console.log(`A row has been updated`);
+  });
+}
+
+module.exports = { start, createPet, editPet, getPets, deletePet, getAllDoors, getDoors, getDoorInfo, saveDoorPet }
