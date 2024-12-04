@@ -1,7 +1,7 @@
 const mqtt = require("mqtt");
 const client = mqtt.connect("mqtt://broker.hivemq.com");
 // const client = mqtt.connect("mqtt://test.mosquitto.org");
-const { getAllDoors, getDoorInfo } = require("./database.js");
+const { getAllDoors, getDoorInfo, getDoors } = require("./database.js");
 
 function start() {
   console.log("MQTT start");
@@ -15,6 +15,7 @@ function start() {
   });
 
   client.on("message", async (topic, message) => {
+    console.log("message from: " + topic);
     var topicArray = topic.split("/");
     if(topicArray[2] == "update"){
       let door_identification = topicArray[1];
@@ -41,12 +42,20 @@ const subscribeToTopic = (topic) => {
   });
 }
 
+const updateUserDoorsInfo = async (user_id) => {
+  let doors = await getDoors(user_id);
+  doors.forEach((door) => {
+    updateDoorInfo(door.identification);
+  });
+}
+
 const updateDoorInfo = async (door_identification) => {
   let door = await getDoorInfo(door_identification);
+  console.log('Atualiza portapet/'+door_identification+'/info com: ' + JSON.stringify(door))
   if(door){
     client.publish('portapet/'+door_identification+'/info', JSON.stringify(door));
   }
 }
 
-module.exports = { start, subscribeToTopic, updateDoorInfo };
+module.exports = { start, subscribeToTopic, updateDoorInfo, updateUserDoorsInfo };
 

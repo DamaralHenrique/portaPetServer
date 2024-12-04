@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const { start: mqttStart, updateDoorInfo } = require("./mqtt.js");
+const { start: mqttStart, updateDoorInfo, updateUserDoorsInfo } = require("./mqtt.js");
 const { start, createPet, editPet, getPets, deletePet, getDoors, getDoorInfo, saveDoorPet } = require("./database.js");
 
 start();
@@ -46,6 +46,8 @@ app.post("/deletePet", async (request, response) => {
   let petId = body.petId;
 
   await deletePet(userId, petId);
+
+  updateUserDoorsInfo(userId);
 
   response.send({ message: "Ok" });
 });
